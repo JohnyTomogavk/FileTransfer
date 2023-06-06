@@ -1,6 +1,7 @@
 ﻿using System.Windows;
+using FileTransfer.ViewModels;
 
-namespace FileTransfer;
+namespace FileTransfer.Views;
 
 /// <summary>
 /// Interaction logic for MainWindow.xaml
