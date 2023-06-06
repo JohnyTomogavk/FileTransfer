@@ -6,6 +6,7 @@
         xmlns:local="clr-namespace:FileTransfer"
         mc:Ignorable="d"
         xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+        xmlns:fa="clr-namespace:FontAwesome.WPF;assembly=FontAwesome.WPF"
         d:DataContext="{d:DesignInstance Type=local:MainWindowViewModel}"
         TextElement.Foreground="{DynamicResource MaterialDesignBody}"
         TextElement.FontWeight="Regular"
@@ -15,16 +16,55 @@
         Background="{DynamicResource MaterialDesignPaper}"
         FontFamily="{DynamicResource MaterialDesignFont}"
         Title="File Transfer" MinWidth="800" MinHeight="450" Height="450" Width="800">
-
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="2*" MinWidth="200px" />
             <ColumnDefinition Width="Auto" />
             <ColumnDefinition Width="6*" MinWidth="300px" />
         </Grid.ColumnDefinitions>
-        <Button Command="{Binding IncCommand}" VerticalAlignment="Bottom" Height="50" Grid.Column="0" Content="Upload new file" />
-        <GridSplitter Grid.Column="1" ShowsPreview="False" Width="3"
-                      HorizontalAlignment="Center" VerticalAlignment="Stretch" />
-        <TextBlock Text="{Binding Path=Counter}" Grid.Column="2" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="120"/>
+
+        <Grid Grid.Column="0">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="3*"/>
+                    <ColumnDefinition Width="1*"/>
+                </Grid.ColumnDefinitions>
+
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="1*" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+
+                <StackPanel Grid.ColumnSpan="2" MinHeight="100" VerticalAlignment="Top" Background="AntiqueWhite">
+                    <TextBlock>List of available files</TextBlock>
+                </StackPanel>
+
+                <Button Grid.Column="0" Grid.Row="1" Command="{Binding IncCommand}" VerticalAlignment="Bottom" Content="Upload new file" />
+                <Button Grid.Column="1" Grid.Row="1" Command="{Binding IncCommand}" VerticalAlignment="Bottom" >
+                    <fa:ImageAwesome Icon="Gear" VerticalAlignment="Center" Foreground="AliceBlue" HorizontalAlignment="Center"></fa:ImageAwesome>
+                </Button>
+            </Grid>
+        </Grid>
+
+        <GridSplitter Grid.Column="1" ShowsPreview="False" Width="3" HorizontalAlignment="Center" VerticalAlignment="Stretch" />
+
+        <Grid Grid.Column="2">
+
+            <Grid.RowDefinitions>
+                <RowDefinition Height="1*" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <StackPanel VerticalAlignment="Top" Orientation="Vertical" Background="AntiqueWhite" Height="100">
+
+            </StackPanel>
+
+            <Button Grid.Column="0"  Background="ForestGreen" Grid.Row="1" VerticalContentAlignment="Bottom" Command="{Binding IncCommand}" VerticalAlignment="Bottom">
+                <StackPanel Orientation="Horizontal">
+                    <fa:ImageAwesome Icon="Download" Foreground="AliceBlue"></fa:ImageAwesome>
+                    <TextBlock Height="18" Margin="10 0">Download selected file</TextBlock>
+                </StackPanel>
+            </Button>
+        </Grid>
     </Grid>
 </Window>
