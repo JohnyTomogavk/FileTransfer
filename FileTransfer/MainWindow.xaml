@@ -5,8 +5,26 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:FileTransfer"
         mc:Ignorable="d"
-        Title="File Transfer" Height="450" Width="800">
-    <Grid>
+        xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+        d:DataContext="{d:DesignInstance Type=local:MainWindowViewModel}"
+        TextElement.Foreground="{DynamicResource MaterialDesignBody}"
+        TextElement.FontWeight="Regular"
+        TextElement.FontSize="13"
+        TextOptions.TextFormattingMode="Ideal"
+        TextOptions.TextRenderingMode="Auto"
+        Background="{DynamicResource MaterialDesignPaper}"
+        FontFamily="{DynamicResource MaterialDesignFont}"
+        Title="File Transfer" MinWidth="800" MinHeight="450" Height="450" Width="800">
 
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="2*" MinWidth="200px" />
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="6*" MinWidth="300px" />
+        </Grid.ColumnDefinitions>
+        <Button Command="{Binding IncCommand}" VerticalAlignment="Bottom" Height="50" Grid.Column="0" Content="Upload new file" />
+        <GridSplitter Grid.Column="1" ShowsPreview="False" Width="3"
+                      HorizontalAlignment="Center" VerticalAlignment="Stretch" />
+        <TextBlock Text="{Binding Path=Counter}" Grid.Column="2" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="120"/>
     </Grid>
 </Window>
