@@ -8,7 +8,6 @@
         xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
         xmlns:fa="clr-namespace:FontAwesome.WPF;assembly=FontAwesome.WPF"
         xmlns:viewModels="clr-namespace:FileTransfer.ViewModels"
-        d:DataContext="{d:DesignInstance Type=viewModels:MainWindowViewModel}"
         TextElement.Foreground="{DynamicResource MaterialDesignBody}"
         TextElement.FontWeight="Regular"
         TextElement.FontSize="13"
@@ -17,7 +16,9 @@
         Background="{DynamicResource MaterialDesignPaper}"
         FontFamily="{DynamicResource MaterialDesignFont}"
         Title="File Transfer" MinWidth="800" MinHeight="450" Height="450" Width="800">
+
     <Grid>
+
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="1*" MinWidth="200px" />
             <ColumnDefinition Width="Auto" />

@@ -1,15 +1,33 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
 using FileTransfer.Command;
 using FileTransfer.Services;
+using Microsoft.Extensions.Logging;
 
 namespace FileTransfer.ViewModels;
 
 internal class MainWindowViewModel : INotifyPropertyChanged
 {
+    private readonly DialogService _dialogService;
+    private readonly FileService _fileService;
+    private readonly MemoryMappedFileService _memoryMappedFile;
+
+    public MainWindowViewModel()
+    {
+        // _dialogService = dialogService;
+        // _memoryMappedFile = new MemoryMappedFileService();
+        // _dialogService = new DialogService();
+        // _fileService = new FileService();
+
+        #region Commands init
+        LoadNewFileCommand = new AppCommand(LoadNewFile, CanLoadNewFile);
+        #endregion
+    }
+
     #region Notify property changed implementation
 
     public event PropertyChangedEventHandler? PropertyChanged;
@@ -50,27 +68,14 @@ internal class MainWindowViewModel : INotifyPropertyChanged
             var fileInfo = new FileInfo(selectedFileName);
             var fileDescriptor= _fileService.GetFileDescriptor(fileInfo);
             
-            // Write it to mapped file with descriptor
+            // Write it to mapped file with descriptors
+
             // Write related file content to another mapped file
+
             // Refresh side menu items
-            // Select just loaded item nad open description
+            // Select just loaded item and open description
         }
     }
 
     #endregion
-
-    public MainWindowViewModel()
-    {
-        _dialogService = new DialogService();
-        _fileService = new FileService();
-        _memoryMappedFile = new MemoryMappedFileService();
-
-        #region Commands init
-        LoadNewFileCommand = new AppCommand(LoadNewFile, CanLoadNewFile);
-        #endregion
-    }
-
-    private readonly DialogService _dialogService;
-    private readonly FileService _fileService;
-    private readonly MemoryMappedFileService _memoryMappedFile;
 }
