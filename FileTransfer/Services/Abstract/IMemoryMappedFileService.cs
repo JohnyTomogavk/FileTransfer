@@ -7,19 +7,20 @@ namespace FileTransfer.Services.Abstract
 {
     internal interface IMemoryMappedFileService : IDisposable
     {
-        /// <summary>
-        /// Tries to extract created File Descriptors from shared memory if they are created
-        /// </summary>
-        /// <returns>Created descriptors or empty array</returns>
-        public IEnumerable<FileDescriptor>? GetExistingDescriptors();
+        public IEnumerable<FileDescriptor>? LoadExistingDescriptors();
 
-        /// <summary>
-        /// Writes descriptor to memory mapped file
-        /// </summary>
-        /// <param name="descriptor">File descriptor</param>
-        /// <returns>Written descriptor</returns>
-        public void WriteDescriptorToFile(FileDescriptor[] descriptor);
+        public void WriteDescriptorToMemoryFile(FileDescriptor[] descriptor);
 
-        public MemoryMappedFile CreateMemoryMappedFileFromFile(string fileName, string fileFullName);
+        public MemoryMappedFile CreateMemoryMappedFileFromFile(string fileName, string fileFullName, long fileLength);
+
+        public MemoryMappedViewStream GetFileStreamFromMemoryMappedFile(string fileName, long fileSize);
+
+        public void RemoveFileFromStorageByName(string fileName);
+
+        public bool DoesSpecifiedDescriptorFileExist(string fileName);
+
+        public bool IsFileHostedLocally(string fileName);
+
+        public void RemoveLocalDescriptorsFromMemoryFile();
     }
 }

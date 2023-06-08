@@ -61,6 +61,10 @@ namespace FileTransfer
 
         protected override async void OnExit(ExitEventArgs e)
         {
+            var memoryMappedService = _host.Services.GetRequiredService<IMemoryMappedFileService>();
+            memoryMappedService.RemoveLocalDescriptorsFromMemoryFile();
+            memoryMappedService.Dispose();
+
             await _host.StopAsync();
             _host.Dispose();
 

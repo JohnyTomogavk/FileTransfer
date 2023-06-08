@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.IO;
@@ -23,8 +22,10 @@ internal class MainWindowViewModel : INotifyPropertyChanged
     private readonly IUserConfigService _userConfigService;
     private ObservableCollection<FileDescriptor> _filesDescriptors;
     private int _selectedIndex = -1;
-    private FileDescriptor _selectedDescriptor;
+    private FileDescriptor? _selectedDescriptor;
     private Visibility _isDescriptionVisible = Visibility.Hidden;
+
+    #region Properties
 
     public ObservableCollection<FileDescriptor> FilesDescriptors
     {
@@ -38,14 +39,25 @@ internal class MainWindowViewModel : INotifyPropertyChanged
         set
         {
             if (value == _selectedIndex) return;
+
             _selectedIndex = value;
-            SelectedDescriptor = _filesDescriptors[value];
-            IsDescriptionVisible = value == -1 ? Visibility.Hidden : Visibility.Visible;
+
+            if (value == -1)
+            {
+                IsDescriptionVisible = Visibility.Hidden;
+                SelectedDescriptor = null;
+            }
+            else
+            {
+                IsDescriptionVisible = Visibility.Visible;
+                SelectedDescriptor = _filesDescriptors[value];
+            }
+
             OnPropertyChanged();
         }
     }
 
-    public FileDescriptor SelectedDescriptor
+    public FileDescriptor? SelectedDescriptor
     {
         get => _selectedDescriptor;
         set => SetField(ref _selectedDescriptor, value);
@@ -62,6 +74,8 @@ internal class MainWindowViewModel : INotifyPropertyChanged
         get => _userConfigService.GetDownloadFolder();
     }
 
+    #endregion
+
     public MainWindowViewModel(
         IDialogService dialogService,
         IFileService fileService,
@@ -73,12 +87,16 @@ internal class MainWindowViewModel : INotifyPropertyChanged
         _memoryMappedService = memoryMappedService;
         _userConfigService = userConfigService;
 
-        LoadFileDescriptors();
+        InitFileDescriptors();
 
         #region Commands init
-        LoadNewFileCommand = new AppCommand(LoadNewFile);
+
+        LoadNewFileCommand = new AppCommand(UploadNewFile);
         RefreshFilesCommand = new AppCommand(RefreshFilesList);
         SelectDownloadFolderCommand = new AppCommand(SelectDownloadFolder);
+        DownloadSelectedFileCommand = new AppCommand(DownloadSelectedFile);
+        RemoveSelectedFileCommand = new AppCommand(RemoveSelectedFile);
+
         #endregion
     }
 
@@ -87,9 +105,9 @@ internal class MainWindowViewModel : INotifyPropertyChanged
         _memoryMappedService?.Dispose();
     }
 
-    private void LoadFileDescriptors()
+    private void InitFileDescriptors()
     {
-        var existedDescriptors = _memoryMappedService.GetExistingDescriptors();
+        var existedDescriptors = _memoryMappedService.LoadExistingDescriptors();
         FilesDescriptors = new ObservableCollection<FileDescriptor>(existedDescriptors);
     }
 
@@ -117,7 +135,7 @@ internal class MainWindowViewModel : INotifyPropertyChanged
 
     public ICommand LoadNewFileCommand { get; }
 
-    private void LoadNewFile()
+    private void UploadNewFile()
     {
         var selectedFileName = _dialogService.GetFileByDialog();
 
@@ -128,23 +146,24 @@ internal class MainWindowViewModel : INotifyPropertyChanged
 
         var fileInfo = new FileInfo(selectedFileName);
         var fileDescriptor = _fileService.GetFileDescriptorFromFileInfo(fileInfo);
-        var existedDescriptors = _memoryMappedService.GetExistingDescriptors();
+        var existedDescriptors = _memoryMappedService.LoadExistingDescriptors();
         var mergedDescriptors = existedDescriptors.Append(fileDescriptor).ToArray();
 
-        _memoryMappedService.WriteDescriptorToFile(mergedDescriptors);
-        _memoryMappedService.CreateMemoryMappedFileFromFile(fileDescriptor.FileName, fileInfo.FullName);
-
-        LoadFileDescriptors();
+        _memoryMappedService.CreateMemoryMappedFileFromFile(fileDescriptor.FileName, fileInfo.FullName,
+            fileInfo.Length);
+        _memoryMappedService.WriteDescriptorToMemoryFile(mergedDescriptors);
+        InitFileDescriptors();
 
         var indexOfAddedFile = FilesDescriptors.IndexOf(fileDescriptor);
         SelectedIndex = indexOfAddedFile;
+        MessageBox.Show($"File {selectedFileName} uploaded");
     }
 
     public ICommand RefreshFilesCommand { get; }
 
     private void RefreshFilesList()
     {
-        LoadFileDescriptors();
+        InitFileDescriptors();
     }
 
     public ICommand SelectDownloadFolderCommand { get; }
@@ -160,6 +179,48 @@ internal class MainWindowViewModel : INotifyPropertyChanged
 
         _userConfigService.SetDownloadFolder(selectedPath);
         OnPropertyChanged(nameof(DownloadFolder));
+    }
+
+    public ICommand DownloadSelectedFileCommand { get; }
+
+    private void DownloadSelectedFile()
+    {
+        if (!_memoryMappedService.DoesSpecifiedDescriptorFileExist(SelectedDescriptor.FileName))
+        {
+            MessageBox.Show("File was deleted by creator. Files list refreshed");
+            InitFileDescriptors();
+            return;
+        }
+
+        var downloadPath = _userConfigService.GetDownloadFolder();
+        var viewStream =
+            _memoryMappedService.GetFileStreamFromMemoryMappedFile(SelectedDescriptor.FileName,
+                SelectedDescriptor.FileLength);
+        _fileService.SaveMemoryMappedStreamToLocalFile(viewStream, downloadPath, SelectedDescriptor.FileName,
+            SelectedDescriptor.FileLength);
+        MessageBox.Show($"File downloaded to: {downloadPath}");
+    }
+
+    public ICommand RemoveSelectedFileCommand { get; }
+
+    private void RemoveSelectedFile()
+    {
+        if (!_memoryMappedService.IsFileHostedLocally(SelectedDescriptor.FileName))
+        {
+            MessageBox.Show(
+                $"File {SelectedDescriptor.FileName} can't be deleted as it was created by another programm. Files list refreshed");
+            InitFileDescriptors();
+
+            return;
+        }
+
+        var existedDescriptors = _memoryMappedService.LoadExistingDescriptors();
+        var filteredDescriptors = existedDescriptors.Where(d => d.FileName != SelectedDescriptor.FileName).ToArray();
+        _memoryMappedService.WriteDescriptorToMemoryFile(filteredDescriptors);
+        _memoryMappedService.RemoveFileFromStorageByName(SelectedDescriptor.FileName);
+        InitFileDescriptors();
+        MessageBox.Show($"File {SelectedDescriptor.FileName} removed");
+        SelectedIndex = -1;
     }
 
     #endregion

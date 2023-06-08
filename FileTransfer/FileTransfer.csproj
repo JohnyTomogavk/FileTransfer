@@ -9,13 +9,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="bin\**" />
-    <EmbeddedResource Remove="bin\**" />
-    <None Remove="bin\**" />
-    <Page Remove="bin\**" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="FontAwesome.WPF" Version="4.7.0.9" />
     <PackageReference Include="MaterialDesignThemes" Version="4.9.0" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="7.0.1" />
@@ -28,6 +21,18 @@
 
   <ItemGroup>
     <Page Include="App.xaml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="bin\Debug\net7.0-windows\Logs\asd.csv" />
+    <Content Include="bin\Debug\net7.0-windows\Logs\log-20230607.log" />
+    <Content Include="bin\Debug\net7.0-windows\Logs\log-20230607_001.log" />
+    <Content Include="bin\Debug\net7.0-windows\Logs\log-20230607_002.log" />
+    <Content Include="bin\Debug\net7.0-windows\Logs\log-20230608.log" />
+    <Content Include="bin\Debug\net7.0-windows\Logs\log-20230608_001.log" />
+    <Content Include="bin\Debug\net7.0-windows\Logs\log-20230608_002.log" />
+    <Content Include="bin\Debug\net7.0-windows\Logs\log-20230608_003.log" />
+    <Content Include="bin\Debug\net7.0-windows\Logs\log-20230608_004.log" />
   </ItemGroup>
 
 </Project>

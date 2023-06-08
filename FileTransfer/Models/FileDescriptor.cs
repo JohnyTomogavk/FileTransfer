@@ -7,12 +7,8 @@ namespace FileTransfer.Models;
 /// A file's parameters, that are used for file saving
 /// </summary
 [Serializable]
-internal struct FileDescriptor
+internal class FileDescriptor
 {
-    /// <summary>
-    /// Length of the file name including extension
-    /// </summary>
-    public int FileNameLength { get; set; }
     /// <summary>
     /// Filename
     /// </summary>
