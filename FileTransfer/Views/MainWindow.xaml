@@ -16,7 +16,7 @@
         TextOptions.TextRenderingMode="Auto"
         Background="{DynamicResource MaterialDesignPaper}"
         FontFamily="{DynamicResource MaterialDesignFont}"
-        Title="File Transfer" MinWidth="800" MinHeight="450" Height="450" Width="800">
+        Title="File Transfer" MinWidth="1000" MinHeight="450" Height="450" Width="1000">
 
     <Window.Resources>
         <converters:BytesToMegabytesConverter x:Key="BytesToMegabytesConverter"/>
@@ -24,7 +24,6 @@
     </Window.Resources>
 
     <Grid>
-
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="1*" MinWidth="200px" />
             <ColumnDefinition Width="Auto" />
@@ -115,8 +114,13 @@
             </Grid>
 
             <DockPanel Grid.Row="1">
-                <Button Background="ForestGreen" VerticalAlignment="Bottom">
-                    <fa:ImageAwesome Icon="Gear" Foreground="AliceBlue"></fa:ImageAwesome>
+                <Button 
+                    Command="{Binding SelectDownloadFolderCommand}"
+                    Background="ForestGreen" VerticalAlignment="Bottom">
+                    <StackPanel ToolTip="{Binding DownloadFolder}" Orientation="Horizontal" MaxWidth="200">
+                        <fa:ImageAwesome Icon="Gear" Foreground="AliceBlue"></fa:ImageAwesome>
+                        <TextBlock Height="18" Margin="10 0" Text="{Binding DownloadFolder}" />
+                    </StackPanel>
                 </Button>
                 <Button Background="ForestGreen" VerticalAlignment="Bottom">
                     <StackPanel Orientation="Horizontal">
@@ -127,7 +131,7 @@
                 <Button Background="Red" VerticalAlignment="Bottom" ToolTip="Remove file from shared access">
                     <StackPanel Orientation="Horizontal">
                         <fa:ImageAwesome Icon="Remove" Foreground="AliceBlue"></fa:ImageAwesome>
-                        <TextBlock Height="18" Margin="10 0">Remove file</TextBlock>
+                        <TextBlock Height="18" Margin="10 0">Remove</TextBlock>
                     </StackPanel>
                 </Button>
             </DockPanel>

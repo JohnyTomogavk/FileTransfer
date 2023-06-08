@@ -7,6 +7,8 @@ namespace FileTransfer.Services.Abstract
 {
     internal interface IDialogService
     {
-        public string? SelectFileDialog();
+        public string? GetFileByDialog();
+
+        public string? GetFolderByDialog();
     }
 }

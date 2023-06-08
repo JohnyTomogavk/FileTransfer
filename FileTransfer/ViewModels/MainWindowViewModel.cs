@@ -1,14 +1,17 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Windows;
+using System.Windows.Forms;
 using System.Windows.Input;
 using FileTransfer.Command;
 using FileTransfer.Models;
 using FileTransfer.Services.Abstract;
+using MessageBox = System.Windows.MessageBox;
 
 namespace FileTransfer.ViewModels;
 
@@ -17,6 +20,7 @@ internal class MainWindowViewModel : INotifyPropertyChanged
     private readonly IDialogService _dialogService;
     private readonly IFileService _fileService;
     private readonly IMemoryMappedFileService _memoryMappedService;
+    private readonly IUserConfigService _userConfigService;
     private ObservableCollection<FileDescriptor> _filesDescriptors;
     private int _selectedIndex = -1;
     private FileDescriptor _selectedDescriptor;
@@ -53,11 +57,21 @@ internal class MainWindowViewModel : INotifyPropertyChanged
         set => SetField(ref _isDescriptionVisible, value);
     }
 
-    public MainWindowViewModel(IDialogService dialogService, IFileService fileService, IMemoryMappedFileService memoryMappedService)
+    public string DownloadFolder
+    {
+        get => _userConfigService.GetDownloadFolder();
+    }
+
+    public MainWindowViewModel(
+        IDialogService dialogService,
+        IFileService fileService,
+        IMemoryMappedFileService memoryMappedService,
+        IUserConfigService userConfigService)
     {
         _dialogService = dialogService;
         _fileService = fileService;
         _memoryMappedService = memoryMappedService;
+        _userConfigService = userConfigService;
 
         LoadFileDescriptors();
 
@@ -105,7 +119,7 @@ internal class MainWindowViewModel : INotifyPropertyChanged
 
     private void LoadNewFile()
     {
-        var selectedFileName = _dialogService.SelectFileDialog();
+        var selectedFileName = _dialogService.GetFileByDialog();
 
         if (string.IsNullOrEmpty(selectedFileName) || !File.Exists(selectedFileName))
         {
@@ -137,7 +151,15 @@ internal class MainWindowViewModel : INotifyPropertyChanged
 
     private void SelectDownloadFolder()
     {
+        var selectedPath = _dialogService.GetFolderByDialog();
 
+        if (string.IsNullOrEmpty(selectedPath) || !Directory.Exists(selectedPath))
+        {
+            return;
+        }
+
+        _userConfigService.SetDownloadFolder(selectedPath);
+        OnPropertyChanged(nameof(DownloadFolder));
     }
 
     #endregion

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using System.Windows;
+using FileTransfer.Models;
 using FileTransfer.Services;
 using FileTransfer.Services.Abstract;
 using FileTransfer.ViewModels;
@@ -39,7 +40,9 @@ namespace FileTransfer
                         DataContext = serviceProvider.GetRequiredService<MainWindowViewModel>()
                     });
 
+                    services.AddSingleton(new UserConfig());
                     services.AddSingleton<IDialogService, DialogService>();
+                    services.AddSingleton<IUserConfigService, UserConfigService>();
                     services.AddSingleton<IFileService, FileService>();
                     services.AddSingleton<IMemoryMappedFileService, MemoryMappedFileService>();
                 })
