@@ -1,24 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿namespace FileTransfer.Constants;
 
-namespace FileTransfer.Constants
+/// <summary>
+/// Constants that are related to logic of work with memory mapped files
+/// </summary>
+internal class MemoryMappedFilesConstants
 {
     /// <summary>
-    /// Constants that are related to logic of work with memory mapped files
+    /// Name of a memory mapped file that contains files' descriptors
     /// </summary>
-    internal class MemoryMappedFilesConstants
-    {
-        /// <summary>
-        /// Name of a memory mapped file that contains files' descriptors
-        /// </summary>
-        public const string FileDescriptorsFileName = "FILES_DESCRIPTORS_MAPPED_FILE";
+    public const string DescriptorsFileName = "FILES_DESCRIPTORS_MAPPED_FILE";
 
-        /// <summary>
-        /// Max count of descriptors that might be stored in the system
-        /// </summary>
-        public const int MaxDescriptorsCount = 5;
-    }
+    /// <summary>
+    /// Size of variable in bytes that contains count of file descriptors created in memory
+    /// </summary>
+    public const int SizeOfSerializedDescriptorsInSharedMemory = sizeof(int);
 }

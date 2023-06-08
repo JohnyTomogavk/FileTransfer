@@ -1,10 +1,11 @@
-﻿using Microsoft.Win32;
+﻿using FileTransfer.Services.Abstract;
+using Microsoft.Win32;
 
 namespace FileTransfer.Services
 {
-    internal class DialogService
+    internal class DialogService : IDialogService
     {
-        public static string? GetFileNameFromUser()
+        public string? SelectFileDialog()
         {
             var fileDialog = new OpenFileDialog();
             fileDialog.ShowDialog();

@@ -1,18 +1,14 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Configuration;
-using System.Data;
-using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
+using FileTransfer.Services;
+using FileTransfer.Services.Abstract;
 using FileTransfer.ViewModels;
 using FileTransfer.Views;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Serilog;
-using Serilog.Core;
-using Serilog.Events;
 
 namespace FileTransfer
 {
@@ -25,11 +21,13 @@ namespace FileTransfer
 
         public App()
         {
+            SetupExceptionHandling();
+
             _host = Host.CreateDefaultBuilder()
-                .UseSerilog((host, loggerConfiguration) =>
+                .UseSerilog((_, loggerConfiguration) =>
                 {
                     loggerConfiguration
-                        .WriteTo.File("applogs-.log", rollingInterval: RollingInterval.Day)
+                        .WriteTo.File("Logs/log-.log", rollingInterval: RollingInterval.Day)
                         .WriteTo.Debug()
                         .MinimumLevel.Warning();
                 })
@@ -40,6 +38,10 @@ namespace FileTransfer
                     {
                         DataContext = serviceProvider.GetRequiredService<MainWindowViewModel>()
                     });
+
+                    services.AddSingleton<IDialogService, DialogService>();
+                    services.AddSingleton<IFileService, FileService>();
+                    services.AddSingleton<IMemoryMappedFileService, MemoryMappedFileService>();
                 })
                 .Build();
         }
@@ -52,8 +54,6 @@ namespace FileTransfer
             MainWindow.Show();
 
             base.OnStartup(e);
-
-            SetupExceptionHandling();
         }
 
         protected override async void OnExit(ExitEventArgs e)
@@ -67,7 +67,9 @@ namespace FileTransfer
         private void SetupExceptionHandling()
         {
             AppDomain.CurrentDomain.UnhandledException += (s, e) =>
+            {
                 LogUnhandledException((Exception)e.ExceptionObject, "AppDomain.CurrentDomain.UnhandledException");
+            };
 
             DispatcherUnhandledException += (s, e) =>
             {
@@ -85,11 +87,13 @@ namespace FileTransfer
         private void LogUnhandledException(Exception exception, string source)
         {
             var logger = _host.Services.GetService<ILogger<App>>();
-            string message = $"Unhandled exception ({source})";
+
+            var message = $"Unhandled exception ({source})";
+
             try
             {
-                System.Reflection.AssemblyName assemblyName = System.Reflection.Assembly.GetExecutingAssembly().GetName();
-                message = string.Format("Unhandled exception in {0} v{1}", assemblyName.Name, assemblyName.Version);
+                var assemblyName = System.Reflection.Assembly.GetExecutingAssembly().GetName();
+                message = $"Unhandled exception in {assemblyName.Name} v{assemblyName.Version}";
             }
             catch (Exception ex)
             {

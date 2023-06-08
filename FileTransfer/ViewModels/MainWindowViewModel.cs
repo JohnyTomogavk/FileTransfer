@@ -1,31 +1,82 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.IO;
+using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Windows;
 using System.Windows.Input;
 using FileTransfer.Command;
-using FileTransfer.Services;
-using Microsoft.Extensions.Logging;
+using FileTransfer.Models;
+using FileTransfer.Services.Abstract;
 
 namespace FileTransfer.ViewModels;
 
 internal class MainWindowViewModel : INotifyPropertyChanged
 {
-    private readonly DialogService _dialogService;
-    private readonly FileService _fileService;
-    private readonly MemoryMappedFileService _memoryMappedFile;
+    private readonly IDialogService _dialogService;
+    private readonly IFileService _fileService;
+    private readonly IMemoryMappedFileService _memoryMappedService;
+    private ObservableCollection<FileDescriptor> _filesDescriptors;
+    private int _selectedIndex = -1;
+    private FileDescriptor _selectedDescriptor;
+    private Visibility _isDescriptionVisible = Visibility.Hidden;
 
-    public MainWindowViewModel()
+    public ObservableCollection<FileDescriptor> FilesDescriptors
     {
-        // _dialogService = dialogService;
-        // _memoryMappedFile = new MemoryMappedFileService();
-        // _dialogService = new DialogService();
-        // _fileService = new FileService();
+        get => _filesDescriptors;
+        set => SetField(ref _filesDescriptors, value);
+    }
+
+    public int SelectedIndex
+    {
+        get => _selectedIndex;
+        set
+        {
+            if (value == _selectedIndex) return;
+            _selectedIndex = value;
+            SelectedDescriptor = _filesDescriptors[value];
+            IsDescriptionVisible = value == -1 ? Visibility.Hidden : Visibility.Visible;
+            OnPropertyChanged();
+        }
+    }
+
+    public FileDescriptor SelectedDescriptor
+    {
+        get => _selectedDescriptor;
+        set => SetField(ref _selectedDescriptor, value);
+    }
+
+    public Visibility IsDescriptionVisible
+    {
+        get => _isDescriptionVisible;
+        set => SetField(ref _isDescriptionVisible, value);
+    }
+
+    public MainWindowViewModel(IDialogService dialogService, IFileService fileService, IMemoryMappedFileService memoryMappedService)
+    {
+        _dialogService = dialogService;
+        _fileService = fileService;
+        _memoryMappedService = memoryMappedService;
+
+        LoadFileDescriptors();
 
         #region Commands init
-        LoadNewFileCommand = new AppCommand(LoadNewFile, CanLoadNewFile);
+        LoadNewFileCommand = new AppCommand(LoadNewFile);
+        RefreshFilesCommand = new AppCommand(RefreshFilesList);
+        SelectDownloadFolderCommand = new AppCommand(SelectDownloadFolder);
         #endregion
+    }
+
+    ~MainWindowViewModel()
+    {
+        _memoryMappedService?.Dispose();
+    }
+
+    private void LoadFileDescriptors()
+    {
+        var existedDescriptors = _memoryMappedService.GetExistingDescriptors();
+        FilesDescriptors = new ObservableCollection<FileDescriptor>(existedDescriptors);
     }
 
     #region Notify property changed implementation
@@ -52,29 +103,41 @@ internal class MainWindowViewModel : INotifyPropertyChanged
 
     public ICommand LoadNewFileCommand { get; }
 
-    private bool CanLoadNewFile() => true;
-
     private void LoadNewFile()
     {
-        var selectedFileName = DialogService.GetFileNameFromUser();
+        var selectedFileName = _dialogService.SelectFileDialog();
 
-        if (string.IsNullOrEmpty(selectedFileName))
+        if (string.IsNullOrEmpty(selectedFileName) || !File.Exists(selectedFileName))
         {
             return;
         }
 
-        if (File.Exists(selectedFileName))
-        {
-            var fileInfo = new FileInfo(selectedFileName);
-            var fileDescriptor= _fileService.GetFileDescriptor(fileInfo);
-            
-            // Write it to mapped file with descriptors
+        var fileInfo = new FileInfo(selectedFileName);
+        var fileDescriptor = _fileService.GetFileDescriptorFromFileInfo(fileInfo);
+        var existedDescriptors = _memoryMappedService.GetExistingDescriptors();
+        var mergedDescriptors = existedDescriptors.Append(fileDescriptor).ToArray();
 
-            // Write related file content to another mapped file
+        _memoryMappedService.WriteDescriptorToFile(mergedDescriptors);
+        _memoryMappedService.CreateMemoryMappedFileFromFile(fileDescriptor.FileName, fileInfo.FullName);
 
-            // Refresh side menu items
-            // Select just loaded item and open description
-        }
+        LoadFileDescriptors();
+
+        var indexOfAddedFile = FilesDescriptors.IndexOf(fileDescriptor);
+        SelectedIndex = indexOfAddedFile;
+    }
+
+    public ICommand RefreshFilesCommand { get; }
+
+    private void RefreshFilesList()
+    {
+        LoadFileDescriptors();
+    }
+
+    public ICommand SelectDownloadFolderCommand { get; }
+
+    private void SelectDownloadFolder()
+    {
+
     }
 
     #endregion
